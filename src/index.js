@@ -609,7 +609,7 @@ module.exports = async (request, response, config = {}, methods = {}) => {
 		try {
 			stats = await handlers.lstat(absolutePath);
 			// If the path looks like it has an extension but actually resolves to a
-			// directory (e.g. /docs/4.6 where path.extname returns '.6'), clear stats
+			// directory (e.g. /docs/1.4 where path.extname returns '.4'), clear stats
 			// so findRelated can fall back to index.html or the .html sibling.
 			if (stats && stats.isDirectory()) {
 				stats = null;
