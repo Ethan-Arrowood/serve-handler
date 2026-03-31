@@ -1375,3 +1375,40 @@ test('etag header is set', async () => {
 		'"ba114dbc69e41e180362234807f093c3c4628f90"'
 	);
 });
+
+test('serve index.html for directory whose name contains a dot (e.g. /4.6)', async () => {
+	const target = '4.6';
+	const index = path.join(fixturesFull, target, 'index.html');
+
+	const url = await getUrl({
+		cleanUrls: true,
+		directoryListing: false,
+		trailingSlash: false
+	});
+
+	const response = await fetch(`${url}/${target}`);
+	const content = await fs.readFile(index, 'utf8');
+	const text = await response.text();
+
+	expect(response.status).toBe(200);
+	expect(text).toBe(content);
+});
+
+test('redirect /4.6/ to /4.6 when trailingSlash is false', async () => {
+	const target = '4.6';
+
+	const url = await getUrl({
+		cleanUrls: true,
+		directoryListing: false,
+		trailingSlash: false
+	});
+
+	const response = await fetch(`${url}/${target}/`, {
+		redirect: 'manual',
+		follow: 0
+	});
+
+	const location = response.headers.get('location');
+	expect(response.status).toBe(301);
+	expect(location).toBe(`${url}/${target}`);
+});
