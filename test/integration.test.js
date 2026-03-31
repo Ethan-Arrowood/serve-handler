@@ -1376,8 +1376,8 @@ test('etag header is set', async () => {
 	);
 });
 
-test('serve index.html for directory whose name contains a dot (e.g. /4.6)', async () => {
-	const target = '4.6';
+test('serve index.html for directory whose name contains a dot (e.g. /1.4)', async () => {
+	const target = '1.4';
 	const index = path.join(fixturesFull, target, 'index.html');
 
 	const url = await getUrl({
@@ -1394,8 +1394,8 @@ test('serve index.html for directory whose name contains a dot (e.g. /4.6)', asy
 	expect(text).toBe(content);
 });
 
-test('redirect /4.6/ to /4.6 when trailingSlash is false', async () => {
-	const target = '4.6';
+test('redirect /1.4/ to /1.4 when trailingSlash is false', async () => {
+	const target = '1.4';
 
 	const url = await getUrl({
 		cleanUrls: true,
@@ -1411,4 +1411,34 @@ test('redirect /4.6/ to /4.6 when trailingSlash is false', async () => {
 	const location = response.headers.get('location');
 	expect(response.status).toBe(301);
 	expect(location).toBe(`${url}/${target}`);
+});
+
+test('serve 1.2.html via cleanUrls when requested as /1.2', async () => {
+	const url = await getUrl({
+		cleanUrls: true,
+		directoryListing: false,
+		trailingSlash: false
+	});
+
+	const content = await fs.readFile(path.join(fixturesFull, '1.2.html'), 'utf8');
+	const response = await fetch(`${url}/1.2`);
+	const text = await response.text();
+
+	expect(response.status).toBe(200);
+	expect(text).toBe(content);
+});
+
+test('prefer directory index.html over .html sibling when both 1.3/ and 1.3.html exist', async () => {
+	const url = await getUrl({
+		cleanUrls: true,
+		directoryListing: false,
+		trailingSlash: false
+	});
+
+	const content = await fs.readFile(path.join(fixturesFull, '1.3', 'index.html'), 'utf8');
+	const response = await fetch(`${url}/1.3`);
+	const text = await response.text();
+
+	expect(response.status).toBe(200);
+	expect(text).toBe(content);
 });
